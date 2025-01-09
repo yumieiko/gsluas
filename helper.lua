@@ -152,7 +152,7 @@ local DEFAULTS = {
 	fov = 0.7,
 	fov_movement = 0.1,
 	select_fov_legit = 8,
-	select_fov_rage = 25,
+	select_fov_rage = 100,
 	max_dist = 6,
 	destroy_text = "Break the object",
 	source_ttl = 5
@@ -1141,6 +1141,14 @@ local default_sources = {
 	},
 	{
 		name = "sigma's HvH locations",
+		id = "sigma_hvh",
+		type = "remote",
+		url = "https://pastebin.com/raw/ewHvQ2tD",
+		description = "Revolutionizing spread HvH",
+		builtin = true
+	},
+	{
+		name = "BRANDON",
 		id = "sigma_hvh",
 		type = "remote",
 		url = "https://pastebin.com/raw/ewHvQ2tD",
@@ -2322,7 +2330,9 @@ local air_duck_reference = ui.reference("MISC", "Movement", "Air duck")
 local infinite_duck_reference = ui.reference("MISC", "Movement", "Infinite duck")
 local aa_enabled_reference = ui.reference("AA", "Anti-aimbot angles", "Enabled")
 local aa_pitch_reference = ui.reference("AA", "Anti-aimbot angles", "Pitch")
-
+local supertoss_reference = ui.reference("Misc", "Miscellaneous", "Super toss")
+local doubletap_reference = ui.reference("RAGE", "Aimbot", "Double tap")
+local hideshots_reference = ui.reference("AA", "Other", "On shot anti-aim")
 --
 -- normal menu items
 --
@@ -4876,6 +4886,8 @@ local function cmd_location_playback_grenade(cmd, local_player, weapon)
 	end
 
 	if playback_state == GRENADE_PLAYBACK_FINISHED then
+		ui.set(doubletap_reference, true)
+		ui.set(hideshots_reference, true)
 		if location_playback.jump then
 			local onground = bit.band(entity.get_prop(local_player, "m_fFlags"), FL_ONGROUND) == FL_ONGROUND
 
@@ -4930,6 +4942,7 @@ local function cmd_location_playback_grenade(cmd, local_player, weapon)
 	end
 
 	if playback_state == GRENADE_PLAYBACK_THROWN then
+
 		if location_playback.jump and ui.get(airstrafe_reference) then
 			ui_restore[airstrafe_reference] = true
 			ui.set(airstrafe_reference, false)
@@ -4938,6 +4951,14 @@ local function cmd_location_playback_grenade(cmd, local_player, weapon)
 		if ui.get(auto_release_reference) then
 			ui_restore[auto_release_reference] = true
 			ui.set(auto_release_reference, false)
+		end
+
+-- fixed by dash
+-- @naphack on dc
+
+		if ui.get(supertoss_reference) then
+			ui_restore[supertoss_reference] = true
+			ui.set(supertoss_reference, false)
 		end
 
 		if ui.get(quick_peek_assist_reference) then
@@ -5039,6 +5060,11 @@ local function cmd_location_playback_movement(cmd, local_player, weapon)
 	if ui.get(airstrafe_reference) then
 		ui_restore[airstrafe_reference] = true
 		ui.set(airstrafe_reference, false)
+	end
+
+	if ui.get(supertoss_reference) then
+		ui_restore[supertoss_reference] = true
+		ui.set(supertoss_reference, false)
 	end
 
 	if ui.get(quick_peek_assist_reference) then
@@ -5208,6 +5234,9 @@ local function on_setup_command(cmd)
 	elseif location_selected ~= nil and hotkey and location_selected.is_in_fov and location_selected.is_position_correct then
 		-- if we're already aiming at the location properly, start executing it
 
+		ui.set(doubletap_reference, false)
+		ui.set(hideshots_reference, false)
+		cmd.force_defensive = 0
 		local speed = vector(entity.get_prop(local_player, "m_vecAbsVelocity")):length()
 		local pin_pulled = entity.get_prop(weapon, "m_bPinPulled") == 1
 
